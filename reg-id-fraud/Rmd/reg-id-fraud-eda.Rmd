@@ -1,0 +1,366 @@
+---
+title: "&nbsp;"
+author: ""
+date: ""
+output: 
+html_document:
+    keep_md: TRUE
+editor_options: 
+# chunk_output_type: inline
+---
+
+# Setup
+
+```{r knit-setup, include=FALSE}
+knitr::opts_chunk$set(
+fig.retina=2, 
+fig.width=16, 
+fig.height = 9, 
+dev=c("png", "cairo_pdf"), 
+echo=FALSE, 
+message=FALSE, 
+warning=FALSE
+)
+```
+
+```{r packages}
+library(tidyverse)
+library(hrbrthemes)
+library(ggridges)
+library(ggalt)
+library(ggthemes)
+
+# load more fonts
+extrafont::loadfonts(quiet = TRUE)
+```
+
+```{r colors}
+ms_orange = "#FF9E01"
+ms_purple = "#882CFF"
+```
+
+
+# Data
+
+Data processed from Jupyter Notebook
+
+```{r data}
+ref = read_csv("../inputs/synthetic-data-clean.csv")
+all_key_down_diff = read_csv("../processed-data/all_key_down_diff.csv")
+```
+
+```{r prep-data}
+ref_clean <- ref %>%
+  janitor::clean_names() %>%
+  mutate(
+    gid = stringr::str_pad(client_session_group, 8, pad = "0"),
+    legit = ifelse(email == "actual", TRUE, FALSE)
+  ) %>%
+  select(
+    user, 
+    gid, 
+    legit
+  )
+  
+```
+
+```{r data-combined}
+df <- all_key_down_diff %>%
+  left_join(ref_clean, by = c("gid" = "gid")) %>%
+  group_by(gid) %>%
+  mutate(
+    gid_index = row_number()
+  ) %>%
+  ungroup() %>%
+  mutate(
+    legit = ifelse(legit == TRUE, "Legitimate", "Illegitimate")
+  ) 
+``` 
+
+
+# Analysis
+
+## Character count by legitimacy
+```{r char-count-legit, fig.width=10, fig.height=4}
+df %>%
+  # filter(!is.na(special_key)) %>%
+  count(legit) %>%
+  ggplot(
+    aes(x = legit, y = n, color = legit)
+  ) +
+  geom_lollipop(size = 5, expand = c(0,0)) +
+  scale_color_manual(values = c(ms_orange, ms_purple)) +
+  scale_y_continuous(breaks = seq(0,10000,500), label = scales::comma) +
+  coord_flip() +
+  theme_ipsum_rc(grid = "X") +
+  theme(
+    legend.position = "none",
+    plot.title.position = "plot"
+  ) +
+  labs(
+    title = "Count of Legitimate vs. Illegimate Key Down Events",
+    x = NULL,
+    y = NULL
+  )
+```
+
+## Special character count by legitimacy
+
+```{r spec-char-count-legit, fig.width=10, fig.height=4}
+df %>%
+  filter(!is.na(special_key)) %>%
+  count(legit) %>%
+  ggplot(
+    aes(x = legit, y = n, color = legit)
+  ) +
+  geom_lollipop(size = 5, expand = c(0,0)) +
+  scale_color_manual(values = c(ms_orange, ms_purple)) +
+  scale_y_continuous(breaks = seq(0,10000,100), label = scales::comma) +
+  coord_flip() +
+  theme_ipsum_rc(grid = "X") +
+  theme(
+    legend.position = "none",
+    plot.title.position = "plot"
+  ) +
+  labs(
+    title = "Count of Legitimate vs. Illegimate Special Key Down Events",
+    x = NULL,
+    y = NULL
+  )
+```
+
+
+## Averages by users
+
+```{r avg-user, fig.width=10, fig.height=16}
+df_order_avg <- df %>%
+  group_by(gid) %>%
+  summarize(avg_td = median(time_diff, na.rm = TRUE)) %>%
+  arrange(desc(avg_td)) %>%
+  ungroup() %>%
+  mutate(ordering = row_number()) %>%
+  select(gid, ordering, avg_td)
+
+df %>%
+  left_join(df_order_avg, by = ("gid" = "gid")) %>%
+  ggplot(
+    aes(
+      x = reorder(gid, desc(ordering)),
+      y = time_diff
+    )
+  ) +
+  geom_violin(
+    aes(fill = legit),
+    alpha = .8
+  ) +
+  geom_tufteboxplot() +
+  scale_y_log10(labels = scales::comma, breaks = c(0, 1, 10, 100, 1000, 10000, 100000), expand = c(0,0)) +
+  scale_fill_manual(values = c(ms_orange, ms_purple)) +
+  theme_ipsum_rc() +
+  theme(
+    legend.position = "none", 
+    axis.text.y = element_blank(),
+    plot.title.position = "plot"
+  ) +
+  coord_flip() +
+  labs(
+    title = "Time Difference Dispersion by Client Group Session",
+    subtitle = "Ordered descending by median of time difference.\nNote log10 transformation on horizontal axis.",
+    y = "Time Difference",
+    x = "Client Group Session"
+  ) +
+  facet_wrap(~legit)
+```
+
+
+## Freqpoly
+
+```{r histogram-legit, fig.width=10, fig.height=8}
+df %>%
+  ggplot(
+    aes(
+      x = time_diff,
+      fill = legit
+    )
+  ) +
+  geom_histogram(bins = 100, alpha = .5, color = "white", position="identity") +
+  xlim(0,3000) +
+  scale_fill_manual(values = c(ms_orange, ms_purple)) +
+  theme_ipsum_rc() +
+  theme(
+    plot.title.position = "plot",
+    legend.title = element_blank(),
+    legend.position = "bottom"
+  ) +
+  labs(
+    title = "Time differences for Legitimate vs. Illegitimate Users",
+    subtitle = "Time difference calculated based on time down to time down event.\n X-axis restricted to 0-3,000 range to exclude extreme outliers.",
+    x = "Time Difference",
+    y = "Count"
+  )
+```
+
+
+```{r freqpoly-legit, fig.width=10, fig.height=7}
+df %>%
+  ggplot(
+    aes(
+      x = time_diff,
+      fill = legit
+    )
+  ) +
+  geom_freqpoly(aes(color = legit)) +
+  scale_x_log10(labels = scales::comma, breaks = c(0, 1, 5, 10, 50, 100, 250, 500, 1000, 5000, 10000, 50000, 100000), expand = c(0,0)) +
+  scale_y_log10(labels = scales::comma, breaks = c(0, 1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 1e6, 1e7), expand = c(0,0)) +
+  scale_color_manual(values = c(ms_orange, ms_purple)) +
+  theme_ipsum_rc() +
+  theme(
+    plot.title.position = "plot",
+    legend.title = element_blank(),
+    legend.position = "bottom"
+  ) +
+  labs(
+    title = "Time differences for Legitimate vs. Illegitimate Users",
+    subtitle = "Time difference calculated based on time down to time down event.\nNote log10 scales.",
+    x = "Time Difference",
+    y = "Count"
+  )
+```
+
+```{r user-legitimacy, fig.width=12, fig.height=5}
+df %>%
+  ggplot(
+    aes(
+      x = gid_index,
+      y = time_diff
+    )
+  ) +
+  geom_point(
+    aes(
+      color = legit
+    ),
+    alpha = .5
+  ) +
+  scale_y_log10(labels = scales::comma) +
+  scale_color_manual(values = c(ms_orange, ms_purple)) +
+  facet_grid( ~ user) +
+  theme_ipsum_rc() +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank()
+  ) +
+  labs(
+    title = "Time Differenecs from Key Down to Key Down by User",
+    x = "Key sequence",
+    y = "Time difference"
+  )
+  
+```
+
+## Special character by users
+
+```{r user-special-character, fig.width=10, fig.height=6}
+df %>%
+  filter(!is.na(special_key)) %>%
+  count(special_key, legit, user) %>%
+  complete(special_key, legit, user, fill = list(NA)) %>%
+  ggplot(
+    aes(x = user, y = reorder(special_key, desc(special_key)))
+  ) +
+  geom_tile(aes(fill = n), color = "white", size = 2) +
+  geom_text(aes(label = n), color = "white") +
+  scale_fill_viridis_c() +
+  facet_wrap(~legit) +
+  theme_ipsum_rc(grid = "") +
+  theme(
+    legend.position = "bottom",
+    axis.ticks = element_blank(),
+    plot.title.position = "plot"
+  ) +
+  labs(
+    title = "Comparison of Special Key Frequency by User and Legitimacy",
+    x = NULL,
+    y = NULL
+  )
+```
+
+Let's calculate the difference on a per-user basis for frequency of special character use.
+
+```{r user-diff-special, fig.width=9, fig.height=7}
+df %>%
+  filter(!is.na(special_key)) %>%
+  filter(special_key != "Tab") %>% # filter out tab -- I'm assuming this is for moving between inputs 
+  count(special_key, legit, user) %>%
+  pivot_wider(names_from = c('legit'), values_from = n) %>%
+  mutate(special_key_diff = Illegitimate - Legitimate) %>% 
+  select(user, special_key, special_key_diff) %>%
+  ggplot() +
+  geom_bar(aes(x = reorder(special_key, desc(special_key)), y = special_key_diff, fill = user), color = "white", stat = "identity", position = "dodge") +
+  scale_fill_viridis_d() +
+  coord_flip()  +
+  theme_ipsum_rc() +
+  theme(
+    plot.title.position = "plot"
+  ) +
+  labs(
+    title = "Difference in Illegitimate and Legitimate Usage of Special Keys by User",
+    subtitle = "Difference = Count of Special Keys in Illegitimate Cases - Legitimate Cases",
+    x = NULL,
+    y = NULL
+  )
+```
+
+```{r special-key-sequenced, fig.width=12, fig.height=8}
+df %>%
+  filter(!is.na(special_key)) %>%
+  ggplot(
+    aes(
+      x = gid_index,
+      y = reorder(special_key, desc(special_key))
+    )
+  ) +
+  # ggplot(aes(x = gid_index, y = reorder(special_key, desc(special_key)))) +
+  geom_jitter(
+    aes(
+      color = legit
+    ),
+    alpha = .3, 
+    size = 3
+  ) +
+  scale_color_manual(values = c(ms_orange, ms_purple)) +
+  theme_ipsum_rc() +
+  theme(
+    plot.title.position = "plot",
+    legend.position = "none"
+  ) +
+  labs(
+    title = "Special Key Usage, sequenced by usage for a given Client Group Session",
+    x = "Sequence"
+  ) +
+  facet_grid(.~legit)
+```
+
+
+
+```{r target-type-time_diff, fig.width=10, fig.height=6}
+df %>%
+  filter(!is.na(target.target_type)) %>%
+  ggplot(
+    aes(x = time_diff, y = reorder(target.target_type, desc(target.target_type)))
+  ) +
+  geom_jitter(aes(color = legit), alpha = .1, size = 3) +
+  scale_color_manual(values = c(ms_orange, ms_purple)) +
+  xlim(0,3000) +
+  facet_wrap(~legit, ncol = 1) +
+  theme_ipsum_rc() +
+  theme(
+    plot.title.position = "plot",
+    legend.position = "none"
+  ) +
+  labs(
+    title = "Time Difference within Target Fields",
+    y = NULL,
+    x = "Time Difference (Key Down to Key Down)"
+  )
+  # coord_flip()
+```

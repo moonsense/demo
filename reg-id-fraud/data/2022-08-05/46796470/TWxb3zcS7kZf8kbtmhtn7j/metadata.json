@@ -1,0 +1,83 @@
+{
+  "sessionId": "TWxb3zcS7kZf8kbtmhtn7j",
+  "appId": "iznJpoSNZiub4WLaukazhQ",
+  "oldestEvent": "2022-08-05T17:19:32.540483550Z",
+  "newestEvent": "2022-08-05T17:19:47.210Z",
+  "createdAt": "2022-08-05T17:19:32.564303Z",
+  "metadata": {
+    "platform": "WEB",
+    "manufacturer": "Chrome",
+    "model": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36",
+    "systemVersion": "103.0.5060.134",
+    "isDevicePhysical": true,
+    "recordingProfile": {
+      "name": "fraud_and_risk",
+      "version": "1"
+    },
+    "releaseVersion": "1.1.0"
+  },
+  "counters": {
+    "app_life_cycle": {
+      "total": 1
+    },
+    "bundle": {
+      "buckets": [
+        {
+          "startTime": "1659719940000",
+          "value": "15"
+        }
+      ],
+      "total": 15
+    },
+    "custom_event": {
+      "total": 4
+    },
+    "focus_change": {
+      "total": 7
+    },
+    "key_press": {
+      "total": 58
+    },
+    "permission": {
+      "total": 6
+    },
+    "pointer": {
+      "total": 104
+    },
+    "text_change": {
+      "total": 35
+    },
+    "viewport_size": {
+      "total": 1
+    }
+  },
+  "labels": [
+    {
+      "labelId": "85CALEM5WaFmvwXJy3qhXk",
+      "name": "payment"
+    },
+    {
+      "labelId": "tHgKseAziQjsK7NeDuSUA8",
+      "name": "interaction"
+    },
+    {
+      "labelId": "yXvqcHoMgDk4822dagMDYS",
+      "name": "payment"
+    }
+  ],
+  "regionId": "us-central1.gcp",
+  "clientSessionGroupId": "46796470",
+  "config": {
+    "requestedDurationMillis": "60000",
+    "sensorSamplingRate": 25,
+    "bundleGenerationIntervalMillis": 1000,
+    "requestedSensors": [
+      "FOCUS_CHANGE",
+      "KEY_PRESS",
+      "MOUSE_WHEEL",
+      "POINTER",
+      "UNKNOWN_SENSOR",
+      "TEXT_CHANGE"
+    ]
+  }
+}

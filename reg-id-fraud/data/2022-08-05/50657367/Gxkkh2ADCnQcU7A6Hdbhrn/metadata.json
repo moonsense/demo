@@ -1,0 +1,75 @@
+{
+  "sessionId": "Gxkkh2ADCnQcU7A6Hdbhrn",
+  "appId": "iznJpoSNZiub4WLaukazhQ",
+  "oldestEvent": "2022-08-05T17:28:06.770495091Z",
+  "newestEvent": "2022-08-05T17:28:17.162Z",
+  "createdAt": "2022-08-05T17:28:06.790831Z",
+  "metadata": {
+    "platform": "WEB",
+    "manufacturer": "Chrome",
+    "model": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36",
+    "systemVersion": "103.0.5060.134",
+    "isDevicePhysical": true,
+    "recordingProfile": {
+      "name": "fraud_and_risk",
+      "version": "1"
+    },
+    "releaseVersion": "1.1.0"
+  },
+  "counters": {
+    "app_life_cycle": {
+      "total": 1
+    },
+    "bundle": {
+      "buckets": [
+        {
+          "startTime": "1659720480000",
+          "value": "3"
+        }
+      ],
+      "total": 3
+    },
+    "click": {
+      "total": 2
+    },
+    "orientation": {
+      "total": 1
+    },
+    "permission": {
+      "total": 7
+    },
+    "viewport_size": {
+      "total": 1
+    }
+  },
+  "labels": [
+    {
+      "labelId": "FGM2exHL9tUeHYq96NGPJP",
+      "name": "sign-in"
+    },
+    {
+      "labelId": "HQWF72JoSgaasTWeawrqPD",
+      "name": "sign-in"
+    },
+    {
+      "labelId": "svCpduduRTnfmRqAQaZxRY",
+      "name": "motion"
+    }
+  ],
+  "regionId": "us-central1.gcp",
+  "clientSessionGroupId": "50657367",
+  "config": {
+    "requestedDurationMillis": "20000",
+    "sensorSamplingRate": 25,
+    "bundleGenerationIntervalMillis": 1000,
+    "requestedSensors": [
+      "ACCELEROMETER",
+      "LOCATION",
+      "CLICK",
+      "LINEAR_ACCELEROMETER",
+      "ORIENTATION",
+      "GYROSCOPE",
+      "MAGNETOMETER"
+    ]
+  }
+}
