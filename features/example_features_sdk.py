@@ -1,9 +1,6 @@
-# read a JSON file that holds a list of bundles
-# feed that into the features SDK to get a list of features
-
-from google.protobuf import json_format
-
 from moonsense.models import SealedBundle
+from moonsense.util import json_format
+
 from moonsense_features import generate
 
 
